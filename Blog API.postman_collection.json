@@ -1,0 +1,382 @@
+{
+	"info": {
+		"_postman_id": "a1c92d19-8bd6-49d4-8192-f2ba3ebd7ef4",
+		"name": "Blog API",
+		"description": "### Blog API Requirements\n\n- Base URL: http://localhost:5000/api\n- Auth: JWT (Bearer Token in Authorization header)\n- Rate Limit: 100 requests per 15 minutes\n- Content-Type: application/json\n- Pagination: ?page=1&limit=10\n- Tags filter: ?tag=tag1,tag2\n- Search: ?search=keyword",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33836774"
+	},
+	"item": [
+		{
+			"name": "Register",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"ayan\", \"password\": \"password\", \"email\": \"karmakarayan217@gmail.com\"}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/auth/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				},
+				"description": "Register a new user"
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"username\": \"ayan\", \"password\": \"password\"}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				},
+				"description": "Login user to get JWT token"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Blog",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"title\": \"Title\", \"content\": \"Content\", \"tags\": [\"Tag 1\", \"Tag 2\"]}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/blogs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs"
+					]
+				},
+				"description": "Create a blog post (JWT required)"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Blogs (Paginated, Search, Tags)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/blogs?page=1&limit=5&search=Title&tag=tag-1,tag-2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "5"
+						},
+						{
+							"key": "search",
+							"value": "Title"
+						},
+						{
+							"key": "tag",
+							"value": "tag-1,tag-2"
+						}
+					]
+				},
+				"description": "Get blogs with pagination, search and tag filter"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Single Blog",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"content\": \"Nice blog!\"}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/blogs/{{blogId}}/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs",
+						"{{blogId}}",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Blog By ID",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"title\": \"Title Updated\", \"content\": \"Content Update\",\"tags\": [\"Tag 1 Updated\", \"Tag 2 Updated\"]}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/blogs/{{blogId}}/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs",
+						"{{blogId}}",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Blog By ID",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"title\": \"Test Blog\", \"content\": \"Content here\", \"tags\": [\"mongodb\", \"nodejs\"]}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/blogs/{{blogId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs",
+						"{{blogId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Comment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{jwt_token}}"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"content\": \"Nice blog! 2\"}"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/blogs/{{blogId}}/comments",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs",
+						"{{blogId}}",
+						"comments"
+					]
+				},
+				"description": "Add comment to a blog (JWT required)"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Blog Comments By BlogID (Paginated)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/blogs/{{blogId}}/comments?page=1&limit=5",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs",
+						"{{blogId}}",
+						"comments"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "limit",
+							"value": "5"
+						}
+					]
+				},
+				"description": "Get comments for a blog with pagination"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Blog Comment By Comment ID",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/api/blogs/{{blogId}}/comments/{{commentId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"blogs",
+						"{{blogId}}",
+						"comments",
+						"{{commentId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "jwt_token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjViYzI2MjM3N2ZlZjY2MTVmNTVmMiIsImlhdCI6MTc0NzMwMzYwNX0.iJFZI8ULBuslkXrbTPmUcCIeP0BO57rIYqsnxaXYpYI",
+			"type": "default"
+		},
+		{
+			"key": "blogId",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4MjViYzI2MjM3N2ZlZjY2MTVmNTVmMiIsImlhdCI6MTc0NzMwMzYwNX0.iJFZI8ULBuslkXrbTPmUcCIeP0BO57rIYqsnxaXYpYI",
+			"type": "default"
+		},
+		{
+			"key": "commentId",
+			"value": "6825c26356fc605c02afb21d",
+			"type": "default"
+		}
+	]
+}
