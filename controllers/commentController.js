@@ -1,4 +1,6 @@
 const Comment = require('../models/Comment');
+const Blog = require('../models/Blog');
+const mongoose = require('mongoose');
 
 exports.addComment = async (req, res) => {
   const comment = await Comment.create({
@@ -38,11 +40,25 @@ exports.getPaginatedComments = async (req, res) => {
 };
 
 exports.deleteComment = async (req, res) => {
-  const comment = await Comment.findById(req.params.commentId);
-  if (!comment) return res.status(404).json({ message: 'Comment not found' });
+  const { commentId, blogId } = req.params;
 
-  const blog = await Blog.findById(comment.blog);
-  if (!blog) return res.status(404).json({ message: 'Blog not found' });
+  if (!mongoose.Types.ObjectId.isValid(commentId) || !mongoose.Types.ObjectId.isValid(blogId)) {
+    return res.status(400).json({ message: 'Invalid blog or comment ID' });
+  }
+
+  const comment = await Comment.findById(commentId);
+  if (!comment) {
+    return res.status(404).json({ message: 'Comment not found' });
+  }
+
+  if (comment.blog.toString() !== blogId) {
+    return res.status(404).json({ message: 'Comment does not belong to this blog' });
+  }
+
+  const blog = await Blog.findById(blogId);
+  if (!blog) {
+    return res.status(404).json({ message: 'Blog not found' });
+  }
 
   const isCommentAuthor = comment.author.toString() === req.user._id.toString();
   const isBlogAuthor = blog.author.toString() === req.user._id.toString();
