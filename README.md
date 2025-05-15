@@ -1,5 +1,9 @@
 Blog API Documentation
 
+1. Clone and run npm i
+2. Create .env file following the example of .env.example
+3. Run npm run dev
+
 Base URL: http://localhost:5000/api
 Authentication: JWT (Bearer Token in Authorization header)
 Rate Limit: 100 requests per 15 minutes
