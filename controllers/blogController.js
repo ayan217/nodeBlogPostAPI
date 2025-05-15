@@ -1,8 +1,42 @@
 const Blog = require('../models/Blog');
+const Tag = require('../models/Tag');
+
+const slugify = (text) =>
+  text.toString().toLowerCase().trim().replace(/\s+/g, '-');
 
 exports.createBlog = async (req, res) => {
-  const blog = await Blog.create({ ...req.body, author: req.user._id });
-  res.json(blog);
+  try {
+    const { title, content, tags = [] } = req.body;
+
+    const tagIds = [];
+
+    for (const tagName of tags) {
+      const slug = slugify(tagName);
+      let tag = await Tag.findOne({ slug });
+
+      if (!tag) {
+        tag = await Tag.create({ name: tagName, slug });
+      }
+
+      tagIds.push(tag._id);
+    }
+
+    const blog = await Blog.create({
+      title,
+      content,
+      tags: tagIds,
+      author: req.user._id,
+    });
+
+    const populatedBlog = await Blog.findById(blog._id)
+      .populate('author', 'username')
+      .populate('tags', 'name');
+
+    res.status(201).json(populatedBlog);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to create blog' });
+  }
 };
 
 exports.getAllBlogs = async (req, res) => {
@@ -12,6 +46,7 @@ exports.getAllBlogs = async (req, res) => {
 
   const blogs = await Blog.find()
     .populate('author', 'username')
+    .populate('tags', 'name')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
@@ -27,7 +62,7 @@ exports.getAllBlogs = async (req, res) => {
 };
 
 exports.getBlogById = async (req, res) => {
-  const blog = await Blog.findById(req.params.id).populate('author', 'username');
+  const blog = await Blog.findById(req.params.id).populate('author', 'username').populate('tags', 'name');
   if (!blog) return res.status(404).json({ message: 'Not found' });
   res.json(blog);
 };
