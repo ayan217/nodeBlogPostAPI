@@ -30,7 +30,7 @@ exports.createBlog = async (req, res) => {
 
     const populatedBlog = await Blog.findById(blog._id)
       .populate('author', 'username')
-      .populate('tags', 'name');
+      .populate('tags',);
 
     res.status(201).json(populatedBlog);
   } catch (err) {
@@ -43,15 +43,38 @@ exports.getAllBlogs = async (req, res) => {
   const page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
   const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10;
   const skip = (page - 1) * limit;
+  const { search, tag } = req.query;
 
-  const blogs = await Blog.find()
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+     if (tag) {
+      const tagSlugs = tag.split(',').map((t) => t.trim());
+      const tagDocs = await Tag.find({ slug: { $in: tagSlugs } });
+
+      const tagIds = tagDocs.map((t) => t._id);
+
+      if (tagIds.length) {
+        query.tags = { $in: tagIds };
+      } else {
+        return res.json({ total: 0, page, pages: 0, blogs: [] });
+      }
+    }
+
+  const blogs = await Blog.find(query)
     .populate('author', 'username')
-    .populate('tags', 'name')
+    .populate('tags',)
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
 
-  const total = await Blog.countDocuments();
+  const total = await Blog.countDocuments(query);
 
   res.json({
     total,
@@ -62,7 +85,7 @@ exports.getAllBlogs = async (req, res) => {
 };
 
 exports.getBlogById = async (req, res) => {
-  const blog = await Blog.findById(req.params.id).populate('author', 'username').populate('tags', 'name');
+  const blog = await Blog.findById(req.params.id).populate('author', 'username').populate('tags',);
   if (!blog) return res.status(404).json({ message: 'Not found' });
   res.json(blog);
 };
