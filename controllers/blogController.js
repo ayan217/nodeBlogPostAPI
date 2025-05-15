@@ -91,13 +91,41 @@ exports.getBlogById = async (req, res) => {
 };
 
 exports.updateBlog = async (req, res) => {
-  const blog = await Blog.findById(req.params.id);
-  if (!blog || blog.author.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ message: 'Unauthorized' });
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog || blog.author.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    const { title, content, tags = [] } = req.body;
+
+    const tagIds = [];
+    for (const tagName of tags) {
+      const slug = slugify(tagName);
+      let tag = await Tag.findOne({ slug });
+
+      if (!tag) {
+        tag = await Tag.create({ name: tagName, slug });
+      }
+
+      tagIds.push(tag._id);
+    }
+
+    blog.title = title || blog.title;
+    blog.content = content || blog.content;
+    blog.tags = tagIds;
+
+    await blog.save();
+
+    const updatedBlog = await Blog.findById(blog._id)
+      .populate('author', 'username')
+      .populate('tags');
+
+    res.json(updatedBlog);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to update blog' });
   }
-  Object.assign(blog, req.body);
-  await blog.save();
-  res.json(blog);
 };
 
 exports.deleteBlog = async (req, res) => {
