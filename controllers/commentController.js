@@ -9,9 +9,32 @@ exports.addComment = async (req, res) => {
   res.json(comment);
 };
 
-exports.getComments = async (req, res) => {
-  const comments = await Comment.find({ blog: req.params.blogId }).populate('author', 'username');
-  res.json(comments);
+exports.getPaginatedComments = async (req, res) => {
+  try {
+    const blogId = req.params.blogId;
+
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 5;
+    const skip = (page - 1) * limit;
+
+    const comments = await Comment.find({ blog: blogId })
+      .populate('author', 'username')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Comment.countDocuments({ blog: blogId });
+
+    res.json({
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      comments,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Failed to fetch comments' });
+  }
 };
 
 exports.deleteComment = async (req, res) => {

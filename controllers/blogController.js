@@ -6,8 +6,24 @@ exports.createBlog = async (req, res) => {
 };
 
 exports.getAllBlogs = async (req, res) => {
-  const blogs = await Blog.find().populate('author', 'username');
-  res.json(blogs);
+  const page = parseInt(req.query.page) > 0 ? parseInt(req.query.page) : 1;
+  const limit = parseInt(req.query.limit) > 0 ? parseInt(req.query.limit) : 10;
+  const skip = (page - 1) * limit;
+
+  const blogs = await Blog.find()
+    .populate('author', 'username')
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const total = await Blog.countDocuments();
+
+  res.json({
+    total,
+    page,
+    pages: Math.ceil(total / limit),
+    blogs
+  });
 };
 
 exports.getBlogById = async (req, res) => {
